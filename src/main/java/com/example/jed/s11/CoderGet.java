@@ -11,30 +11,41 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.example.jed.s05.CoderPlain;
+
 @WebServlet("/s11/coder/get")
 public class CoderGet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-    private static final Logger log = LoggerFactory.getLogger(CoderGet.class);
+	private static final long serialVersionUID = 1L;
+	private static final Logger log = LoggerFactory.getLogger(CoderGet.class);
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        log.trace("enter");
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		log.trace("enter");
 
-        String param = request.getParameter("id");
-        long id = Long.parseLong(param);
+		String param = request.getParameter("id");
+		long id = Long.parseLong(param);
 
-        new CoderDao().read(id).ifPresentOrElse(coder -> {
-            log.debug("Found coder " + id);
-            request.setAttribute("coder", coder);
-        }, () -> log.info(String.format("Coder %d not found", id)));
+//		new CoderDao().read(id).ifPresentOrElse(coder -> {
+//			log.debug("Found coder " + id);
+//			request.setAttribute("coder", coder);
+//		}, () -> log.info(String.format("Coder %d not found", id)));
 
-        request.getRequestDispatcher("/coder.jsp").forward(request, response);
-    }
+		CoderDao dao = new CoderDao();
+		CoderPlain coder = dao.readRaw(id);
+		if (coder == null) {
+			log.info(String.format("Coder %d not found", id));
+		} else {
+			log.debug("Found coder " + id);
+			request.setAttribute("coder", coder);
+		}
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        doGet(request, response);
-    }
+		request.getRequestDispatcher("/coder.jsp").forward(request, response);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		doGet(request, response);
+	}
 }
